@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Automation Tool</title>
+  <style>
+    /* CSS Styling */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      height: 50px; /* Reduced height for the textarea */
+    }
+
+    button {
+      display: inline-block;
+      padding: 10px 20px;
+      margin-top: 10px;
+      margin-right: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Website Automation Tool</h1>
+    <form id="websiteForm">
+      <label for="links">Add Website Link:</label>
+      <textarea id="links" placeholder="https://example.com"></textarea>
+    </form>
+
+    <div>
+      <button id="startScroll">Start Auto-Scroll</button>
+      <button id="stopScroll">Stop Auto-Scroll</button>
+    </div>
+
+    <div id="status"></div>
+  </div>
+
+  <script>
+    // Variables to manage automation
+    let currentWindow = null;
+    let scrollInterval = null;
+
+    // Open website immediately when added to the textarea
+    document.getElementById('links').addEventListener('input', function () {
+      const rawLink = this.value.trim(); // Get the link from textarea
+
+      if (rawLink && isValidUrl(rawLink)) {
+        openWebsiteInFullScreen(rawLink); // Open the link in full-screen mode
+        document.getElementById('status').innerHTML = `Opened: ${rawLink}`;
+        this.value = ''; // Clear the textarea after opening the link
+      }
+    });
+
+    // Function to validate URL
+    function isValidUrl(url) {
+      try {
+        new URL(url);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // Function to open website in full-screen mode
+    function openWebsiteInFullScreen(url) {
+      currentWindow = window.open(url, '_blank');
+      currentWindow.onload = () => {
+        try {
+          currentWindow.document.documentElement.requestFullscreen(); // Full-screen mode
+        } catch (error) {
+          console.log('Full-screen mode not supported.');
+        }
+      };
+    }
+
+    // Start Auto-Scroll
+    document.getElementById('startScroll').addEventListener('click', function () {
+      if (!currentWindow || currentWindow.closed) {
+        alert('No active website to perform auto-scroll!');
+        return;
+      }
+
+      let scrollDirection = 1; // 1 for down, -1 for up
+      scrollInterval = setInterval(() => {
+        if (currentWindow.scrollY >= currentWindow.document.body.scrollHeight - currentWindow.innerHeight) {
+          scrollDirection = -1; // Reverse direction when reaching bottom
+        } else if (currentWindow.scrollY <= 0) {
+          scrollDirection = 1; // Reverse direction when reaching top
+        }
+
+        currentWindow.scrollBy(0, scrollDirection * 50); // Scroll by 50px
+      }, 100);
+
+      alert('Auto-scroll started!');
+    });
+
+    // Stop Auto-Scroll
+    document.getElementById('stopScroll').addEventListener('click', function () {
+      if (scrollInterval) {
+        clearInterval(scrollInterval);
+        alert('Auto-scroll stopped!');
+      }
+    });
+  </script>
+</body>
+</html>
